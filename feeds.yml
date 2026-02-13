@@ -30,3 +30,10 @@ feeds:
     max_items: 50
     scan_limit: 400
     enrich_limit: 200
+
+- id: "slimkql-main-folder-commits"
+  type: "passthrough_feed"
+  title: "SlimKQL Hunting Queries — Main folder commits"
+  home_url: "https://github.com/SlimKQL/Hunting-Queries-Detection-Rules/tree/main"
+  source_feed_url: "https://github.com/SlimKQL/Hunting-Queries-Detection-Rules/commits/main.atom"
+  max_items: 50
