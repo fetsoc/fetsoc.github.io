@@ -51,3 +51,4 @@ feeds:
     home_url: "https://malpedia.caad.fkie.fraunhofer.de/"
     page_url: "https://malpedia.caad.fkie.fraunhofer.de/"
     max_items: 50
+    use_details_fallback: true
