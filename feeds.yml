@@ -1,0 +1,55 @@
+site_base: "https://fetsoc.github.io/rssfeeds"   # your GitHub Pages base
+output_dir: "docs/feeds"
+
+feeds:
+  # ---- TEMPLATE TYPE 1: SITEMAP BLOG (works great for modern JS sites like hunt.io/blog) ----
+  - id: "hunt-blog"
+    type: "sitemap_blog"
+    title: "Hunt.io Blog"
+    home_url: "https://hunt.io/blog"
+    sitemap_url: "https://hunt.io/sitemap.xml"
+    include_prefix: "https://hunt.io/blog/"
+    exclude_exact:
+      - "https://hunt.io/blog"
+      - "https://hunt.io/blog/"
+    max_items: 50
+    enrich_candidates: 80
+
+  # ---- TEMPLATE TYPE 2: EXISTING RSS/ATOM (normalize or re-host a feed) ----
+  - id: "some-existing-feed"
+    type: "passthrough_feed"
+    title: "Example Vendor Blog (Normalized)"
+    source_feed_url: "https://example.com/feed.xml"
+    home_url: "https://example.com/blog"
+    max_items: 50
+
+  # ---- TEMPLATE TYPE 3: HTML LIST PAGE (classic blogs with server-side HTML) ----
+  - id: "example-html-blog"
+    type: "html_list"
+    title: "Example HTML Blog"
+    list_url: "https://example.com/blog"
+    home_url: "https://example.com/blog"
+    item_link_selector: "h2.entry-title a"     # selector for links on the list page
+    max_items: 30
+
+  # ---- TEMPLATE TYPE 4: JSON API (sites that expose post lists as JSON) ----
+  - id: "example-json-blog"
+    type: "json_api"
+    title: "Example JSON Blog"
+    home_url: "https://example.com/blog"
+    api_url: "https://example.com/api/posts"
+    # JMESPath expressions:
+    items_expr: "posts"                        # where list of items lives
+    title_expr: "title"
+    url_expr: "url"
+    date_expr: "published_at"
+    max_items: 50
+
+  # ---- TEMPLATE TYPE 5: GitHub Releases (perfect for tooling + detections) ----
+  - id: "microsoft-sentinel-releases"
+    type: "github_releases"
+    title: "Repo Releases: owner/repo"
+    owner: "owner"
+    repo: "repo"
+    home_url: "https://github.com/owner/repo/releases"
+    max_items: 30
