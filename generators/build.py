@@ -339,6 +339,111 @@ def build_github_releases(feed: Dict[str, Any]) -> List[Dict[str, Any]]:
     )
     return out[:max_items]
 
+def build_sitemap_blog_tag(feed: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Build a feed by:
+      1) reading sitemap URLs
+      2) selecting URLs under include_prefix (e.g., /blog/)
+      3) fetching each post page and including it only if it contains one of the tag tokens
+         (e.g., 'tag=labs-research' or 'Labs Research')
+    """
+    sitemap_url = feed["sitemap_url"]
+    include_prefix = feed["include_prefix"]
+    exclude_exact = set(feed.get("exclude_exact", []))
+    max_items = int(feed.get("max_items", 50))
+
+    # These strings are searched in the HTML to determine tag membership.
+    # Example: ["tag=labs-research", "Labs Research"]
+    tag_tokens = [t.lower() for t in feed.get("tag_tokens", [])]
+    match_mode = feed.get("tag_match_mode", "any").lower()  # "any" or "all"
+
+    # Safety caps so Actions doesn't spend forever crawling
+    scan_limit = int(feed.get("scan_limit", 250))           # max pages to inspect
+    enrich_limit = int(feed.get("enrich_limit", 120))       # max pages to enrich if tag matches
+
+    xml_text = fetch_text(sitemap_url)
+    locs = parse_sitemap_locs(xml_text)
+
+    # Candidate post URLs from sitemap
+    candidates = []
+    for u in locs:
+        if u in exclude_exact:
+            continue
+        if u.startswith(include_prefix) and u != include_prefix.rstrip("/"):
+            candidates.append(u)
+
+    items: List[Dict[str, Any]] = []
+    checked = 0
+    enriched = 0
+
+    for url in candidates:
+        if checked >= scan_limit or len(items) >= max_items or enriched >= enrich_limit:
+            break
+        checked += 1
+
+        try:
+            html = fetch_text(url)
+            html_lc = html.lower()
+
+            # Determine whether this post belongs to the desired tag set
+            if tag_tokens:
+                if match_mode == "all":
+                    ok = all(tok in html_lc for tok in tag_tokens)
+                else:
+                    ok = any(tok in html_lc for tok in tag_tokens)
+                if not ok:
+                    continue
+
+            # If tagged, extract title/date/desc from the same HTML (avoid a 2nd fetch)
+            soup = BeautifulSoup(html, "html.parser")
+
+            # title: og:title -> h1 -> <title>
+            title = None
+            og_title = soup.select_one('meta[property="og:title"]')
+            if og_title and og_title.get("content"):
+                title = og_title["content"].strip()
+            if not title:
+                h1 = soup.find("h1")
+                if h1:
+                    title = h1.get_text(" ", strip=True)
+            if not title and soup.title:
+                title = soup.title.get_text(strip=True)
+            if not title:
+                title = url
+
+            # desc: og:description
+            desc = None
+            og_desc = soup.select_one('meta[property="og:description"]')
+            if og_desc and og_desc.get("content"):
+                desc = og_desc["content"].strip()
+
+            # date: article:published_time -> fallback visible "Mon DD, YYYY"
+            published = None
+            meta_pub = soup.select_one('meta[property="article:published_time"]')
+            if meta_pub and meta_pub.get("content"):
+                published = safe_parse_date(meta_pub["content"])
+            if not published:
+                text = soup.get_text(" ", strip=True)
+                m = re.search(
+                    r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b\s+\d{1,2},\s+\d{4}",
+                    text,
+                )
+                if m:
+                    published = safe_parse_date(m.group(0))
+
+            items.append({"url": url, "title": title, "published": published, "description": desc})
+            enriched += 1
+
+        except Exception:
+            continue
+
+    # Sort newest-first
+    items.sort(
+        key=lambda x: x["published"] or datetime(1970, 1, 1, tzinfo=timezone.utc),
+        reverse=True,
+    )
+
+    return items[:max_items]
 
 # ----------------------------
 # Dispatcher
@@ -349,6 +454,7 @@ BUILDERS = {
     "html_list": build_html_list,
     "json_api": build_json_api,
     "github_releases": build_github_releases,
+    "sitemap_blog_tag": build_sitemap_blog_tag,
 }
 
 
