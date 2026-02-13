@@ -7,13 +7,6 @@
     <atom:link href="https://fetsoc.github.io/rssfeeds/feeds/malpedia-inventory-updates.xml" rel="self"/>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>python-feedgen</generator>
-    <lastBuildDate>Fri, 13 Feb 2026 20:40:54 +0000</lastBuildDate>
-    <item>
-      <title>SYMBOL — COMMON_NAME</title>
-      <link>https://malpedia.caad.fkie.fraunhofer.de/details/SYMBOL</link>
-      <description>COMMON_NAME (Batch: 2026-02-05 19:13:55 UTC) (Batch stats: 1 7 2 3 2026 11 43 41 1 5 12 1 31 2026 20 56 04 1 1)</description>
-      <guid isPermaLink="false">https://malpedia.caad.fkie.fraunhofer.de/details/SYMBOL</guid>
-      <pubDate>Thu, 05 Feb 2026 19:13:55 +0000</pubDate>
-    </item>
+    <lastBuildDate>Fri, 13 Feb 2026 21:27:18 +0000</lastBuildDate>
   </channel>
 </rss>
