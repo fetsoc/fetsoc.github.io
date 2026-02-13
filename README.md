@@ -140,8 +140,7 @@ If you want to change schedule frequency, edit the cron expression in:
 - Ensure your URL/prefix is correct.
 - For `sitemap_blog_tag`, confirm the `tag_tokens` actually appear in the post HTML.
 
-### One feed failure breaks everything
-- Recommended: add “skip-on-error” behavior in `generators/build.py` so the run continues even if one feed fails.
+
 
 ---
 
@@ -155,6 +154,4 @@ PRs are welcome.
 
 ---
 
-## License
 
-Use whatever license fits your org/team (or inherit the repo’s current license if present).
