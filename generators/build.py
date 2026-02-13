@@ -447,132 +447,102 @@ def build_sitemap_blog_tag(feed: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 def build_malpedia_inventory_updates(feed: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
-    Build RSS items from the 'Inventory Updates' section on the Malpedia homepage.
-
-    Strategy:
-      - Fetch homepage HTML
-      - Find the 'Inventory Updates' block
-      - Parse each update row: date/time + numeric counters
-      - Emit items describing what changed
+    Build RSS items from Malpedia's 'Inventory Updates' widget.
+    Each row is assumed to contain:
+      - left: family id/name (often a link to the family page)
+      - right: update message (e.g. 'This family was updated.' / 'A new family was added.')
     """
-    url = feed.get("page_url", "https://malpedia.caad.fkie.fraunhofer.de/")
+    page_url = feed.get("page_url", "https://malpedia.caad.fkie.fraunhofer.de/")
     max_items = int(feed.get("max_items", 50))
 
-    html = fetch_text(url)
+    html = fetch_text(page_url)
     soup = BeautifulSoup(html, "html.parser")
 
-    # Find the header containing 'Inventory Updates'
+    # Locate the "Inventory Updates" heading
     header = None
     for tag in soup.find_all(["h1", "h2", "h3", "h4", "strong", "b", "div", "span"]):
-        if tag.get_text(" ", strip=True).lower() == "inventory updates":
+        txt = tag.get_text(" ", strip=True).lower()
+        if txt == "inventory updates" or "inventory updates" in txt:
             header = tag
             break
 
     if not header:
-        # Fallback: search for partial match
-        for tag in soup.find_all(["h1", "h2", "h3", "h4", "strong", "b", "div", "span"]):
-            if "inventory updates" in tag.get_text(" ", strip=True).lower():
-                header = tag
-                break
-
-    if not header:
-        # Nothing found; return empty but don't crash
         return []
 
-    # Attempt to locate the container after the header
-    container = header.find_parent()
-    # Walk forward looking for a table or list that contains the updates
-    updates_block = None
-    for _ in range(6):
-        if not container:
+    # Try to locate a nearby table (most common layout)
+    # Walk forward a bit from the header's parent
+    cursor = header
+    for _ in range(8):
+        if cursor is None:
             break
-        # Look for a table first
-        tbl = container.find("table")
+        tbl = cursor.find_next("table")
         if tbl:
-            updates_block = tbl
+            updates_table = tbl
             break
-        # Otherwise look for a list
-        ul = container.find(["ul", "ol"])
-        if ul:
-            updates_block = ul
-            break
-        container = container.find_next()
+        cursor = cursor.parent
+    else:
+        updates_table = None
 
     items: List[Dict[str, Any]] = []
 
-    def parse_numbers(text: str) -> List[int]:
-        return [int(x) for x in re.findall(r"\b\\d+\\b", text)]
+    # Helper: create absolute URLs if relative links are used
+    def abs_url(href: str) -> str:
+        return urljoin(page_url, href)
 
-    def parse_datetime_from_text(text: str) -> Optional[datetime]:
-        # Example seen on homepage: "5 Feb 2026 19:13:55"
-        # We'll rely on dateutil parsing.
-        return safe_parse_date(text)
-
-    # Case A: table
-    if updates_block and updates_block.name == "table":
-        rows = updates_block.find_all("tr")
-        for r in rows:
-            row_text = r.get_text(" ", strip=True)
-            if not row_text:
-                continue
-            # crude split: date/time first, then counters
-            # extract a date-ish prefix by trying parse on the full string and then trimming
-            # easiest: search for something like "Feb 2026" pattern
-            m = re.search(r"\\b\\d{1,2}\\s+[A-Za-z]{3,}\\s+\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}\\b", row_text)
-            dt = safe_parse_date(m.group(0)) if m else None
-            nums = parse_numbers(row_text)
-            if not dt and nums:
-                # not a valid row
+    # If we found a table, parse rows
+    if updates_table:
+        for tr in updates_table.find_all("tr"):
+            tds = tr.find_all("td")
+            if len(tds) < 2:
                 continue
 
-            title = f"Malpedia Inventory Update — {dt.date().isoformat() if dt else 'Unknown date'}"
-            desc = f"Raw update row: {row_text}"
+            left = tds[0]
+            right = tds[1]
+
+            family_text = left.get_text(" ", strip=True)
+            msg_text = right.get_text(" ", strip=True)
+
+            if not family_text or not msg_text:
+                continue
+
+            # Prefer a link to the family page if present
+            link = page_url
+            a = left.find("a")
+            if a and a.get("href"):
+                link = abs_url(a["href"])
+
+            # Optional: try to parse a timestamp if present in the row text
+            # If Malpedia includes a date/time column, it will be detected here.
+            row_text = tr.get_text(" ", strip=True)
+            published = None
+            m = re.search(r"\b\d{1,2}\s+[A-Za-z]{3,}\s+\d{4}\s+\d{2}:\d{2}:\d{2}\b", row_text)
+            if m:
+                published = safe_parse_date(m.group(0))
 
             items.append({
-                "url": url,
-                "title": title,
-                "published": dt,
-                "description": desc
+                "url": link,
+                "title": f"{family_text} — {msg_text}",
+                "published": published,
+                "description": msg_text
             })
 
-    # Case B: list (ul/ol)
-    elif updates_block and updates_block.name in ("ul", "ol"):
-        for li in updates_block.find_all("li"):
-            row_text = li.get_text(" ", strip=True)
-            if not row_text:
-                continue
-
-            m = re.search(r"\\b\\d{1,2}\\s+[A-Za-z]{3,}\\s+\\d{4}\\s+\\d{2}:\\d{2}:\\d{2}\\b", row_text)
-            dt = safe_parse_date(m.group(0)) if m else None
-
-            title = f"Malpedia Inventory Update — {dt.date().isoformat() if dt else 'Unknown date'}"
-            desc = f"Raw update line: {row_text}"
-
-            items.append({
-                "url": url,
-                "title": title,
-                "published": dt,
-                "description": desc
-            })
-
-    # Fallback: if no table/list found, just grab nearby text lines after header
     else:
-        # Grab next few lines of text after header area
-        block_text = header.find_parent().get_text("\\n", strip=True)
-        lines = [ln.strip() for ln in block_text.splitlines() if ln.strip()]
-        # Keep only lines that look like date entries
-        for ln in lines:
-            if re.search(r"\\b\\d{1,2}\\s+[A-Za-z]{3,}\\s+\\d{4}\\b", ln):
-                dt = parse_datetime_from_text(ln)
-                title = f"Malpedia Inventory Update — {dt.date().isoformat() if dt else 'Unknown date'}"
+        # Fallback: some sites render this as a list instead of a table.
+        # Try to find a UL/OL immediately after the header
+        ul = header.find_next(["ul", "ol"])
+        if ul:
+            for li in ul.find_all("li"):
+                row_text = li.get_text(" ", strip=True)
+                if not row_text:
+                    continue
                 items.append({
-                    "url": url,
-                    "title": title,
-                    "published": dt,
-                    "description": ln
+                    "url": page_url,
+                    "title": row_text,
+                    "published": None,
+                    "description": row_text
                 })
 
-    # Sort newest first
+    # Sort newest first if dates exist (otherwise keep as-is)
     items.sort(
         key=lambda x: x["published"] or datetime(1970, 1, 1, tzinfo=timezone.utc),
         reverse=True
