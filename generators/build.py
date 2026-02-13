@@ -448,101 +448,109 @@ def build_sitemap_blog_tag(feed: Dict[str, Any]) -> List[Dict[str, Any]]:
 def build_malpedia_inventory_updates(feed: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Build RSS items from Malpedia's 'Inventory Updates' widget.
-    Each row is assumed to contain:
-      - left: family id/name (often a link to the family page)
-      - right: update message (e.g. 'This family was updated.' / 'A new family was added.')
+
+    Observed structure:
+      - A batch header line above the updates table containing:
+          <timestamp> <counters...>
+        e.g. "5 Feb 2026 19:13:55 1 7 2"
+      - A table with two columns per row:
+          left: family id/name (e.g. js.otter_cookie)
+          right: message (e.g. This family was updated.)
     """
     page_url = feed.get("page_url", "https://malpedia.caad.fkie.fraunhofer.de/")
     max_items = int(feed.get("max_items", 50))
+    use_details_fallback = bool(feed.get("use_details_fallback", True))
 
     html = fetch_text(page_url)
     soup = BeautifulSoup(html, "html.parser")
 
-    # Locate the "Inventory Updates" heading
+    # 1) Find the "Inventory Updates" label/heading
     header = None
     for tag in soup.find_all(["h1", "h2", "h3", "h4", "strong", "b", "div", "span"]):
         txt = tag.get_text(" ", strip=True).lower()
         if txt == "inventory updates" or "inventory updates" in txt:
             header = tag
             break
-
     if not header:
         return []
 
-    # Try to locate a nearby table (most common layout)
-    # Walk forward a bit from the header's parent
-    cursor = header
-    for _ in range(8):
-        if cursor is None:
-            break
-        tbl = cursor.find_next("table")
-        if tbl:
-            updates_table = tbl
-            break
-        cursor = cursor.parent
-    else:
-        updates_table = None
+    # 2) Find the updates table near the header
+    updates_table = header.find_next("table")
+    if not updates_table:
+        return []
 
-    items: List[Dict[str, Any]] = []
+    # 3) Find the batch header line *above* the table containing the timestamp and counters
+    # Example: "5 Feb 2026 19:13:55 1 7 2"
+    batch_dt = None
+    batch_stats = None
 
-    # Helper: create absolute URLs if relative links are used
+    # Scan a few elements immediately before the table
+    prev = updates_table
+    for _ in range(12):
+        prev = prev.find_previous()
+        if not prev:
+            break
+        text = prev.get_text(" ", strip=True)
+        if not text:
+            continue
+
+        # Look for timestamp pattern first
+        m = re.search(r"\b\d{1,2}\s+[A-Za-z]{3,}\s+\d{4}\s+\d{2}:\d{2}:\d{2}\b", text)
+        if m:
+            batch_dt = safe_parse_date(m.group(0))
+            # Capture any trailing numeric counters after the timestamp
+            tail = text[m.end():].strip()
+            nums = re.findall(r"\b\d+\b", tail)
+            if nums:
+                batch_stats = " ".join(nums)
+            break
+
+    # Helper: make absolute URL
     def abs_url(href: str) -> str:
         return urljoin(page_url, href)
 
-    # If we found a table, parse rows
-    if updates_table:
-        for tr in updates_table.find_all("tr"):
-            tds = tr.find_all("td")
-            if len(tds) < 2:
-                continue
+    items: List[Dict[str, Any]] = []
 
-            left = tds[0]
-            right = tds[1]
+    # 4) Parse rows: family + message
+    for tr in updates_table.find_all("tr"):
+        tds = tr.find_all("td")
+        if len(tds) < 2:
+            continue
 
-            family_text = left.get_text(" ", strip=True)
-            msg_text = right.get_text(" ", strip=True)
+        left = tds[0]
+        right = tds[1]
 
-            if not family_text or not msg_text:
-                continue
+        family = left.get_text(" ", strip=True)
+        msg = right.get_text(" ", strip=True)
 
-            # Prefer a link to the family page if present
-            link = page_url
-            a = left.find("a")
-            if a and a.get("href"):
-                link = abs_url(a["href"])
+        if not family or not msg:
+            continue
 
-            # Optional: try to parse a timestamp if present in the row text
-            # If Malpedia includes a date/time column, it will be detected here.
-            row_text = tr.get_text(" ", strip=True)
-            published = None
-            m = re.search(r"\b\d{1,2}\s+[A-Za-z]{3,}\s+\d{4}\s+\d{2}:\d{2}:\d{2}\b", row_text)
-            if m:
-                published = safe_parse_date(m.group(0))
+        # Prefer link if present
+        link = page_url
+        a = left.find("a")
+        if a and a.get("href"):
+            link = abs_url(a["href"])
+        elif use_details_fallback:
+            # Malpedia family details pages commonly look like /details/<family_id>
+            # Example seen on the site: /details/win.redline_stealer [3](https://hunt.io/blog/pasteee-xworm-asyncrat-infrastructure)
+            link = abs_url(f"/details/{family}")
 
-            items.append({
-                "url": link,
-                "title": f"{family_text} — {msg_text}",
-                "published": published,
-                "description": msg_text
-            })
+        # Include batch stats in description so the context isn't lost
+        desc = msg
+        if batch_dt:
+            desc = f"{msg} (Batch: {batch_dt.strftime('%Y-%m-%d %H:%M:%S %Z')})"
+        if batch_stats:
+            desc = f"{desc} (Batch stats: {batch_stats})"
 
-    else:
-        # Fallback: some sites render this as a list instead of a table.
-        # Try to find a UL/OL immediately after the header
-        ul = header.find_next(["ul", "ol"])
-        if ul:
-            for li in ul.find_all("li"):
-                row_text = li.get_text(" ", strip=True)
-                if not row_text:
-                    continue
-                items.append({
-                    "url": page_url,
-                    "title": row_text,
-                    "published": None,
-                    "description": row_text
-                })
+        items.append({
+            "url": link,
+            "title": f"{family} — {msg}",
+            "published": batch_dt,
+            "description": desc
+        })
 
-    # Sort newest first if dates exist (otherwise keep as-is)
+    # 5) Sort newest first (they will all share the same batch timestamp anyway)
     items.sort(
         key=lambda x: x["published"] or datetime(1970, 1, 1, tzinfo=timezone.utc),
         reverse=True
