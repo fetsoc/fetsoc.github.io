@@ -7,7 +7,7 @@
     <atom:link href="https://fetsoc.github.io/rssfeeds/feeds/slimkql-main-folder-commits.xml" rel="self"/>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>python-feedgen</generator>
-    <lastBuildDate>Sat, 14 Feb 2026 12:32:22 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 14 Feb 2026 18:25:00 +0000</lastBuildDate>
     <item>
       <title>Delete IOC/BRICKSTORMBackdoor.csv</title>
       <link>https://github.com/SlimKQL/Hunting-Queries-Detection-Rules/commit/816b932d3e198a59de5b55a4523a0b5f5e88b1f5</link>
