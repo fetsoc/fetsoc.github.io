@@ -7,7 +7,21 @@
     <atom:link href="https://fetsoc.github.io/rssfeeds/feeds/hunt-blog.xml" rel="self"/>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>python-feedgen</generator>
-    <lastBuildDate>Tue, 17 Feb 2026 12:43:51 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 17 Feb 2026 18:46:28 +0000</lastBuildDate>
+    <item>
+      <title>URLx Just Got Bigger: 10.6B URLs for Recon and Malicious Infrastructure Hunting</title>
+      <link>https://hunt.io/blog/urlx-product-update</link>
+      <description>Explore exposed infrastructure with URLx: 10.6B+ URLs, HTTPx integration, and advanced filtering - now live in Hunt.io.</description>
+      <guid isPermaLink="false">https://hunt.io/blog/urlx-product-update</guid>
+      <pubDate>Thu, 27 Mar 2025 00:00:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>Russian-Speaking Threat Actor Abuses Cloudflare &amp; Telegram in Phishing Campaign</title>
+      <link>https://hunt.io/blog/russian-actor-cloudflare-phishing-telegram-c2</link>
+      <description>Learn how a Russian-speaking threat actor has evolved from impersonating EFF to now deploying Cloudflare-themed phishing with Telegram-based C2.</description>
+      <guid isPermaLink="false">https://hunt.io/blog/russian-actor-cloudflare-phishing-telegram-c2</guid>
+      <pubDate>Tue, 01 Apr 2025 00:00:00 +0000</pubDate>
+    </item>
     <item>
       <title>Proactive ClickFix Threat Hunting with Hunt.io</title>
       <link>https://hunt.io/blog/clickfix-pages-proactive-threat-hunting</link>
@@ -114,13 +128,6 @@
       <pubDate>Thu, 19 Jun 2025 00:00:00 +0000</pubDate>
     </item>
     <item>
-      <title>Announcing Hunt 2.3: Improved Threat Hunting Experience &amp; SSO Availability</title>
-      <link>https://hunt.io/blog/announcing-hunt-2-3</link>
-      <description>Hunt 2.3 is here: analyst-driven insights, easier pivots, better phishing workflows, and full SSO support for enterprise teams.</description>
-      <guid isPermaLink="false">https://hunt.io/blog/announcing-hunt-2-3</guid>
-      <pubDate>Wed, 25 Jun 2025 00:00:00 +0000</pubDate>
-    </item>
-    <item>
       <title>Threat Hunting at Scale: Explore 10.6B URLs to Find Payloads, C2s, and Exposed Assets with URLx</title>
       <link>https://hunt.io/blog/threat-hunting-with-urlx</link>
       <description>Explore 10.6B structured URLs with URLx. Find malware payloads, C2 paths, phishing campaigns, and exposed assets, fast.</description>
@@ -133,13 +140,6 @@
       <description>Splunk’s Jose Hernandez talks building detections, curious hires, Hunt.io in action, and balancing threat research with chickens and family life.</description>
       <guid isPermaLink="false">https://hunt.io/blog/splunk-interview-jose-hernandez</guid>
       <pubDate>Tue, 08 Jul 2025 00:00:00 +0000</pubDate>
-    </item>
-    <item>
-      <title>Announcing Hunt 2.4</title>
-      <link>https://hunt.io/blog/announcing-hunt-2-4</link>
-      <description>Hunt 2.4 adds archive-aware search, deeper SQL visibility, and improved phishing intel to make threat hunting faster, clearer, and more powerful.</description>
-      <guid isPermaLink="false">https://hunt.io/blog/announcing-hunt-2-4</guid>
-      <pubDate>Tue, 15 Jul 2025 00:00:00 +0000</pubDate>
     </item>
     <item>
       <title>630K gov.br Subdomains Abused in SEO Poisoning Attack</title>
@@ -254,13 +254,6 @@
       <pubDate>Mon, 20 Oct 2025 00:00:00 +0000</pubDate>
     </item>
     <item>
-      <title>From Munitions to Malware: Joseph Harrison on Threat Detection &amp; Digital Forensics</title>
-      <link>https://hunt.io/blog/interview-joseph-harrison-threat-detection</link>
-      <description>In this interview, Joseph Harrison shares how his Air Force-minted discipline fuels his work in threat detection and digital forensics, and how he leverages Hunt.io’s data (especially JA4) to catch adversaries others miss.</description>
-      <guid isPermaLink="false">https://hunt.io/blog/interview-joseph-harrison-threat-detection</guid>
-      <pubDate>Thu, 23 Oct 2025 00:00:00 +0000</pubDate>
-    </item>
-    <item>
       <title>Multilingual ZIP Phishing Campaigns Targeting Financial and Government Organizations Across Asia</title>
       <link>https://hunt.io/blog/multilingual-zip-phishing-campaigns-asia-financial-government</link>
       <description>Hunt.io maps phishing campaigns using shared ZIP payload infrastructure targeting financial institutions and government organizations across Asia. Learn more.</description>
@@ -357,6 +350,13 @@
       <description>Our research team identified over 17,500 internet-exposed OpenClaw, Clawdbot, and Moltbot instances vulnerable to CVE-2026-25253. This report documents detection methods and infrastructure analysis using Hunt.io</description>
       <guid isPermaLink="false">https://hunt.io/blog/cve-2026-25253-openclaw-ai-agent-exposure</guid>
       <pubDate>Tue, 03 Feb 2026 00:00:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>Fake Homebrew Pages Deliver Cuckoo Stealer via ClickFix | macOS Threat Hunting Analysis</title>
+      <link>https://hunt.io/blog/fake-homebrew-clickfix-cuckoo-stealer-macos</link>
+      <description>Technical analysis of a ClickFix campaign delivering Cuckoo Stealer through fake Homebrew typosquat domains. Includes infrastructure pivots, HuntSQL queries, C2 details, persistence, and more.</description>
+      <guid isPermaLink="false">https://hunt.io/blog/fake-homebrew-clickfix-cuckoo-stealer-macos</guid>
+      <pubDate>Tue, 17 Feb 2026 00:00:00 +0000</pubDate>
     </item>
   </channel>
 </rss>
