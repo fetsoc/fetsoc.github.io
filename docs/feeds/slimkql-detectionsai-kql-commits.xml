@@ -7,14 +7,7 @@
     <atom:link href="https://fetsoc.github.io/rssfeeds/feeds/slimkql-detectionsai-kql-commits.xml" rel="self"/>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>python-feedgen</generator>
-    <lastBuildDate>Mon, 23 Feb 2026 06:57:05 +0000</lastBuildDate>
-    <item>
-      <title>Update file at /KQL/hunting-darkspectre.kql</title>
-      <link>https://github.com/SlimKQL/Detections.AI/commit/37117451be3587c9cd032f5085b12275fec3a3ee</link>
-      <description>&lt;pre style="white-space: pre-wrap; width: 81ex;"&gt;Update file at /KQL/hunting-darkspectre.kql&lt;/pre&gt;</description>
-      <guid isPermaLink="false">https://github.com/SlimKQL/Detections.AI/commit/37117451be3587c9cd032f5085b12275fec3a3ee</guid>
-      <pubDate>Thu, 01 Jan 2026 04:40:01 +0000</pubDate>
-    </item>
+    <lastBuildDate>Mon, 23 Feb 2026 12:45:32 +0000</lastBuildDate>
     <item>
       <title>Delete KQL/hunting-darkspectre.kql</title>
       <link>https://github.com/SlimKQL/Detections.AI/commit/ac6ce6c79055ff9d1e8295f9e309350b7397689a</link>
@@ -147,6 +140,13 @@
       <description>&lt;pre style="white-space: pre-wrap; width: 81ex;"&gt;Update file at /KQL/hunting-nanoclaw.kql&lt;/pre&gt;</description>
       <guid isPermaLink="false">https://github.com/SlimKQL/Detections.AI/commit/6f7ffb777ca9f8a2764c61ec334eb01dd35782c1</guid>
       <pubDate>Sun, 22 Feb 2026 15:51:13 +0000</pubDate>
+    </item>
+    <item>
+      <title>Update file at /KQL/hunting-nanoclaw.kql</title>
+      <link>https://github.com/SlimKQL/Detections.AI/commit/900b8a3f9a2b35802976edc1f3baf4cdbd932209</link>
+      <description>&lt;pre style="white-space: pre-wrap; width: 81ex;"&gt;Update file at /KQL/hunting-nanoclaw.kql&lt;/pre&gt;</description>
+      <guid isPermaLink="false">https://github.com/SlimKQL/Detections.AI/commit/900b8a3f9a2b35802976edc1f3baf4cdbd932209</guid>
+      <pubDate>Mon, 23 Feb 2026 09:37:35 +0000</pubDate>
     </item>
   </channel>
 </rss>
